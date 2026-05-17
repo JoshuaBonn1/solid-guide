@@ -85,6 +85,33 @@ class FrameworkSelfTest(unittest.TestCase):
         self.assertTrue(case_result.correct)
         self.assertGreater(len(case_result.budget_violations), 0)
 
+    def test_input_adaptation_is_outside_measured_time(self) -> None:
+        def slow_input() -> int:
+            time.sleep(0.005)
+            return 1
+
+        result = AlgorithmTestSuite(
+            suite_name="adaptation",
+            algorithm_name="fast identity",
+            algorithm=lambda value: value,
+            options=BenchmarkOptions(
+                warmup_iterations=0,
+                measurement_iterations=1,
+                measure_memory=False,
+                gc_before_memory_measurement=False,
+            ),
+            cases=(
+                AlgorithmCase(
+                    name="slow input factory",
+                    input_factory=slow_input,
+                    expected_output=lambda value: value,
+                    budget=ComplexityBudget(max_average_duration_ns=2_000_000),
+                ),
+            ),
+        ).run()
+
+        self.assertTrue(result.passed)
+
     def test_thrown_exceptions_fail_cases(self) -> None:
         def broken_algorithm(value: int) -> int:
             raise RuntimeError("boom")

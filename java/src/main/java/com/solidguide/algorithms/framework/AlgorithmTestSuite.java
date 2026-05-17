@@ -86,7 +86,8 @@ public final class AlgorithmTestSuite<I, O> {
 
     private ExecutionStats measure(AlgorithmCase<I, O> testCase) throws Exception {
         for (int i = 0; i < options.warmupIterations(); i++) {
-            consume(algorithm.run(testCase.inputFactory().get()));
+            I input = testCase.inputFactory().get();
+            consume(algorithm.run(input));
         }
 
         long totalDuration = 0L;
@@ -100,9 +101,10 @@ public final class AlgorithmTestSuite<I, O> {
                 MemoryMeter.requestGcPause();
             }
 
+            I input = testCase.inputFactory().get();
             long memoryBefore = options.measureMemory() ? MemoryMeter.usedHeapBytes() : 0L;
             long started = System.nanoTime();
-            O output = algorithm.run(testCase.inputFactory().get());
+            O output = algorithm.run(input);
             long elapsed = System.nanoTime() - started;
             consume(output);
             long memoryAfter = options.measureMemory() ? MemoryMeter.usedHeapBytes() : memoryBefore;

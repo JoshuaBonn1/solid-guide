@@ -10,6 +10,7 @@ public final class FrameworkSelfTest {
         passingAlgorithmsProduceStats();
         incorrectAlgorithmsFailCorrectness();
         budgetViolationsFailCases();
+        inputAdaptationIsOutsideMeasuredTime();
         thrownExceptionsFailCases();
     }
 
@@ -67,6 +68,31 @@ public final class FrameworkSelfTest {
         assertFalse(result.passed(), "budget suite should fail");
         assertTrue(caseResult.correct(), "budget failure should still be correct");
         assertFalse(caseResult.budgetViolations().isEmpty(), "budget violation should be recorded");
+    }
+
+    private static void inputAdaptationIsOutsideMeasuredTime() {
+        AlgorithmSuiteResult<Integer> result = AlgorithmTestSuite.<Integer, Integer>builder("adaptation")
+                .algorithm("fast identity", input -> input)
+                .options(new BenchmarkOptions(0, 1, false, false))
+                .addCase(AlgorithmCase.<Integer, Integer>builder("slow input factory")
+                        .input(() -> {
+                            try {
+                                Thread.sleep(5L);
+                            } catch (InterruptedException interrupted) {
+                                Thread.currentThread().interrupt();
+                                throw new IllegalStateException(interrupted);
+                            }
+                            return 1;
+                        })
+                        .expect(input -> input)
+                        .budget(ComplexityBudget.builder()
+                                .maxAverageDuration(Duration.ofMillis(2))
+                                .build())
+                        .build())
+                .build()
+                .run();
+
+        assertTrue(result.passed(), "input adaptation should not count against timing budget");
     }
 
     private static void thrownExceptionsFailCases() {
