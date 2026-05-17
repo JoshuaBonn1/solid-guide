@@ -10,7 +10,17 @@ from .framework import (
     ComplexityBudget,
     ExecutionStats,
 )
-from .agnostic import AgnosticCase, adapt_in_place_list_algorithm, adapt_out_of_place, load_cases
+from .agnostic import (
+    AgnosticCase,
+    adapt_in_place_list_algorithm,
+    adapt_out_of_place,
+    boolean,
+    int_list,
+    int_matrix,
+    integer,
+    load_cases,
+    string,
+)
 
 __all__ = [
     "AgnosticCase",
@@ -24,5 +34,10 @@ __all__ = [
     "ExecutionStats",
     "adapt_in_place_list_algorithm",
     "adapt_out_of_place",
+    "boolean",
+    "int_list",
+    "int_matrix",
+    "integer",
     "load_cases",
+    "string",
 ]

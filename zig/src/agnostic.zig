@@ -37,6 +37,26 @@ pub fn loadSearchCases(allocator: std.mem.Allocator) ![]CaseData {
     return parseCases(allocator, @embedFile("search_cases"));
 }
 
+pub fn loadTwoSumCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("two_sum_cases"));
+}
+
+pub fn loadValidParenthesesCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("valid_parentheses_cases"));
+}
+
+pub fn loadNumberOfIslandsCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("number_of_islands_cases"));
+}
+
+pub fn loadCourseScheduleCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("course_schedule_cases"));
+}
+
+pub fn loadTrappingRainWaterCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("trapping_rain_water_cases"));
+}
+
 pub fn adaptSortingOutOfPlace(
     allocator: std.mem.Allocator,
     data: []CaseData,
@@ -124,6 +144,51 @@ pub fn parseInt(value: []const u8) !i32 {
     return std.fmt.parseInt(i32, std.mem.trim(u8, value, " \r\n\t"), 10);
 }
 
+pub fn parseBool(value: []const u8) !bool {
+    const trimmed = std.mem.trim(u8, value, " \r\n\t");
+    if (std.mem.eql(u8, trimmed, "true")) return true;
+    if (std.mem.eql(u8, trimmed, "false")) return false;
+    return error.ExpectedBool;
+}
+
+pub fn parseString(value: []const u8) ![]const u8 {
+    const trimmed = std.mem.trim(u8, value, " \r\n\t");
+    if (trimmed.len < 2 or trimmed[0] != '"' or trimmed[trimmed.len - 1] != '"') {
+        return error.ExpectedString;
+    }
+    return trimmed[1 .. trimmed.len - 1];
+}
+
+pub fn parseIntMatrix(allocator: std.mem.Allocator, value: []const u8) ![]const []const i32 {
+    const trimmed = std.mem.trim(u8, value, " \r\n\t");
+    if (trimmed.len < 2 or trimmed[0] != '[' or trimmed[trimmed.len - 1] != ']') {
+        return error.ExpectedMatrix;
+    }
+    const body = std.mem.trim(u8, trimmed[1 .. trimmed.len - 1], " \r\n\t");
+    if (body.len == 0) {
+        return allocator.alloc([]const i32, 0);
+    }
+
+    const row_count = countTopLevelParts(body);
+    const rows = try allocator.alloc([]const i32, row_count);
+    var start: usize = 0;
+    var depth: i32 = 0;
+    var index: usize = 0;
+    for (body, 0..) |char, position| {
+        if (char == '[' or char == '{') {
+            depth += 1;
+        } else if (char == ']' or char == '}') {
+            depth -= 1;
+        } else if (char == ',' and depth == 0) {
+            rows[index] = try parseIntList(allocator, body[start..position]);
+            index += 1;
+            start = position + 1;
+        }
+    }
+    rows[index] = try parseIntList(allocator, body[start..]);
+    return rows;
+}
+
 fn parseCases(allocator: std.mem.Allocator, data: []const u8) ![]CaseData {
     var count: usize = 0;
     var lines_for_count = std.mem.splitScalar(u8, data, '\n');
@@ -161,6 +226,21 @@ fn parseCases(allocator: std.mem.Allocator, data: []const u8) ![]CaseData {
         index += 1;
     }
     return cases;
+}
+
+fn countTopLevelParts(value: []const u8) usize {
+    var count: usize = 1;
+    var depth: i32 = 0;
+    for (value) |char| {
+        if (char == '[' or char == '{') {
+            depth += 1;
+        } else if (char == ']' or char == '}') {
+            depth -= 1;
+        } else if (char == ',' and depth == 0) {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 fn intListInput(allocator: std.mem.Allocator, context: ?*const anyopaque) ![]i32 {

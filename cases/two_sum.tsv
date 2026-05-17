@@ -1,0 +1,9 @@
+# solid-guide-cases-v1
+# difficulty: easy
+# problem: two-sum
+# input: record{nums:list<int>,target:int}
+# output: list<int>
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+classic pair	{"nums":[2,7,11,15],"target":9}	[0,1]	50000000	8388608
+uses duplicate values	{"nums":[3,3],"target":6}	[0,1]	50000000	8388608
+pair near end	{"nums":[1,5,9,14,20],"target":34}	[3,4]	50000000	8388608

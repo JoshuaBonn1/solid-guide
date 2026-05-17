@@ -1,0 +1,10 @@
+# solid-guide-cases-v1
+# difficulty: easy
+# problem: valid-parentheses
+# input: string
+# output: bool
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+mixed valid	"()[]{}"	true	50000000	8388608
+nested valid	"{[()]}"	true	50000000	8388608
+mismatched closing	"(]"	false	50000000	8388608
+wrong order	"([)]"	false	50000000	8388608

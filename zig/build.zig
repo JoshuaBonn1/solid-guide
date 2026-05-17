@@ -46,4 +46,19 @@ fn addCaseFiles(b: *std.Build, module: *std.Build.Module) void {
     module.addAnonymousImport("search_cases", .{
         .root_source_file = b.path("../cases/search.tsv"),
     });
+    module.addAnonymousImport("two_sum_cases", .{
+        .root_source_file = b.path("../cases/two_sum.tsv"),
+    });
+    module.addAnonymousImport("valid_parentheses_cases", .{
+        .root_source_file = b.path("../cases/valid_parentheses.tsv"),
+    });
+    module.addAnonymousImport("number_of_islands_cases", .{
+        .root_source_file = b.path("../cases/number_of_islands.tsv"),
+    });
+    module.addAnonymousImport("course_schedule_cases", .{
+        .root_source_file = b.path("../cases/course_schedule.tsv"),
+    });
+    module.addAnonymousImport("trapping_rain_water_cases", .{
+        .root_source_file = b.path("../cases/trapping_rain_water.tsv"),
+    });
 }

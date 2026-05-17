@@ -12,6 +12,7 @@ public final class ExampleAlgorithmsTest {
     public static void main(String[] args) {
         verifiesSortingExamples();
         verifiesSearchExample();
+        verifiesCodingProblemExamples();
     }
 
     private static void verifiesSortingExamples() {
@@ -31,6 +32,24 @@ public final class ExampleAlgorithmsTest {
         AlgorithmSuiteResult<Integer> result = ExampleHarness.binarySearchSuite().run();
         if (!result.passed()) {
             throw new AssertionError("expected search suite to pass\n" + AlgorithmTestRunner.format(result));
+        }
+    }
+
+    private static void verifiesCodingProblemExamples() {
+        if (!ExampleHarness.twoSumSuite().run().passed()) {
+            throw new AssertionError("expected two-sum suite to pass");
+        }
+        if (!ExampleHarness.validParenthesesSuite().run().passed()) {
+            throw new AssertionError("expected valid-parentheses suite to pass");
+        }
+        if (!ExampleHarness.numberOfIslandsSuite().run().passed()) {
+            throw new AssertionError("expected number-of-islands suite to pass");
+        }
+        if (!ExampleHarness.courseScheduleSuite().run().passed()) {
+            throw new AssertionError("expected course-schedule suite to pass");
+        }
+        if (!ExampleHarness.trappingRainWaterSuite().run().passed()) {
+            throw new AssertionError("expected trapping-rain-water suite to pass");
         }
     }
 }

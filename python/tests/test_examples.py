@@ -9,6 +9,7 @@ from solid_guide_algorithms.examples import (
     insertion_sort_suite,
     merge_sort_suite,
 )
+from solid_guide_algorithms.problems import problem_suites
 
 
 class ExampleAlgorithmsTest(unittest.TestCase):
@@ -23,6 +24,11 @@ class ExampleAlgorithmsTest(unittest.TestCase):
     def test_search_example_passes(self) -> None:
         result = binary_search_suite().run()
         self.assertTrue(result.passed, AlgorithmTestRunner.format(result))
+
+    def test_coding_problem_examples_pass(self) -> None:
+        for suite in problem_suites():
+            result = suite.run()
+            self.assertTrue(result.passed, AlgorithmTestRunner.format(result))
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 const std = @import("std");
 const framework = @import("framework.zig");
 const examples = @import("examples.zig");
+const problems = @import("problems.zig");
 
 const IntCase = framework.AlgorithmCase(i32, i32);
 
@@ -147,6 +148,35 @@ test "example search suite passes" {
     defer result.deinit();
 
     try std.testing.expect(result.passed());
+}
+
+test "coding problem suites pass" {
+    var two_sum_suite = try problems.twoSumSuite(std.testing.allocator);
+    defer two_sum_suite.deinit();
+    var two_sum_result = try two_sum_suite.run();
+    defer two_sum_result.deinit();
+    var valid_suite = try problems.validParenthesesSuite(std.testing.allocator);
+    defer valid_suite.deinit();
+    var valid_result = try valid_suite.run();
+    defer valid_result.deinit();
+    var islands_suite = try problems.numberOfIslandsSuite(std.testing.allocator);
+    defer islands_suite.deinit();
+    var islands_result = try islands_suite.run();
+    defer islands_result.deinit();
+    var courses_suite = try problems.courseScheduleSuite(std.testing.allocator);
+    defer courses_suite.deinit();
+    var courses_result = try courses_suite.run();
+    defer courses_result.deinit();
+    var rain_suite = try problems.trappingRainWaterSuite(std.testing.allocator);
+    defer rain_suite.deinit();
+    var rain_result = try rain_suite.run();
+    defer rain_result.deinit();
+
+    try std.testing.expect(two_sum_result.passed());
+    try std.testing.expect(valid_result.passed());
+    try std.testing.expect(islands_result.passed());
+    try std.testing.expect(courses_result.passed());
+    try std.testing.expect(rain_result.passed());
 }
 
 fn zeroInput(_: std.mem.Allocator, _: ?*const anyopaque) !i32 {
