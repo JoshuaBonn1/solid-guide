@@ -1,18 +1,16 @@
 const std = @import("std");
 const framework = @import("framework.zig");
+const agnostic = @import("agnostic.zig");
 
-pub const SearchInput = struct {
-    values: []const i32,
-    target: i32,
-};
-
-const SortCase = framework.AlgorithmCase([]const i32, []i32);
-const SearchCase = framework.AlgorithmCase(SearchInput, i32);
+pub const SearchInput = agnostic.SearchRecord;
 
 pub fn insertionSort(allocator: std.mem.Allocator, input: []const i32) ![]i32 {
     const values = try allocator.alloc(i32, input.len);
     @memcpy(values, input);
+    return insertionSortInPlace(allocator, values);
+}
 
+pub fn insertionSortInPlace(_: std.mem.Allocator, values: []i32) ![]i32 {
     var index: usize = 1;
     while (index < values.len) : (index += 1) {
         const current = values[index];
@@ -73,60 +71,94 @@ pub fn linearSearch(_: std.mem.Allocator, input: SearchInput) !i32 {
     return -1;
 }
 
-pub fn insertionSortSuite(allocator: std.mem.Allocator) framework.AlgorithmTestSuite([]const i32, []i32) {
+pub fn ExampleSuite(comptime Input: type, comptime Output: type) type {
+    return struct {
+        adapted: agnostic.AdaptedCases(Input, Output),
+        suite: framework.AlgorithmTestSuite(Input, Output),
+
+        pub fn deinit(self: @This()) void {
+            self.adapted.deinit();
+        }
+
+        pub fn run(self: @This()) !framework.AlgorithmSuiteResult {
+            return self.suite.run();
+        }
+    };
+}
+
+pub fn insertionSortSuite(allocator: std.mem.Allocator) !ExampleSuite([]const i32, []i32) {
     return sortingSuite(allocator, "insertion-sort", insertionSort);
 }
 
-pub fn mergeSortSuite(allocator: std.mem.Allocator) framework.AlgorithmTestSuite([]const i32, []i32) {
+pub fn mergeSortSuite(allocator: std.mem.Allocator) !ExampleSuite([]const i32, []i32) {
     return sortingSuite(allocator, "merge-sort", mergeSort);
 }
 
-pub fn binarySearchSuite(allocator: std.mem.Allocator) framework.AlgorithmTestSuite(SearchInput, i32) {
-    const cases = struct {
-        const values = [_]SearchCase{
-            .{
-                .name = "finds first element",
-                .input_factory = firstElementInput,
-                .expected_output = linearSearch,
-                .equality = intEquality,
-                .budget = framework.ComplexityBudget.withLimits(2_000_000, 256 * 1024),
-            },
-            .{
-                .name = "finds middle element",
-                .input_factory = middleElementInput,
-                .expected_output = linearSearch,
-                .equality = intEquality,
-                .budget = framework.ComplexityBudget.withLimits(2_000_000, 256 * 1024),
-            },
-            .{
-                .name = "reports absent element",
-                .input_factory = absentElementInput,
-                .expected_output = linearSearch,
-                .equality = intEquality,
-                .budget = framework.ComplexityBudget.withLimits(2_000_000, 256 * 1024),
-            },
-        };
-    }.values;
-
-    return .{
-        .suite_name = "search",
-        .algorithm_name = "binary-search",
-        .algorithm = binarySearch,
-        .cases = &cases,
-        .options = framework.BenchmarkOptions.quick(),
+pub fn insertionSortInPlaceSuite(allocator: std.mem.Allocator) !ExampleSuite([]i32, []i32) {
+    const data = try agnostic.loadSortingCases(allocator);
+    errdefer allocator.free(data);
+    const cases = try agnostic.adaptSortingInPlace(allocator, data);
+    errdefer allocator.free(cases);
+    const adapted = agnostic.AdaptedCases([]i32, []i32){
+        .data = data,
+        .cases = cases,
         .allocator = allocator,
+    };
+    return .{
+        .adapted = adapted,
+        .suite = .{
+            .suite_name = "sorting",
+            .algorithm_name = "insertion-sort-in-place",
+            .algorithm = insertionSortInPlace,
+            .cases = adapted.cases,
+            .options = framework.BenchmarkOptions.quick(),
+            .allocator = allocator,
+        },
+    };
+}
+
+pub fn binarySearchSuite(allocator: std.mem.Allocator) !ExampleSuite(SearchInput, i32) {
+    const data = try agnostic.loadSearchCases(allocator);
+    errdefer allocator.free(data);
+    const cases = try agnostic.adaptSearch(allocator, data);
+    errdefer allocator.free(cases);
+    const adapted = agnostic.AdaptedCases(SearchInput, i32){
+        .data = data,
+        .cases = cases,
+        .allocator = allocator,
+    };
+    return .{
+        .adapted = adapted,
+        .suite = .{
+            .suite_name = "search",
+            .algorithm_name = "binary-search",
+            .algorithm = binarySearch,
+            .cases = adapted.cases,
+            .options = framework.BenchmarkOptions.quick(),
+            .allocator = allocator,
+        },
     };
 }
 
 pub fn runExamples(allocator: std.mem.Allocator) !bool {
-    var insertion_result = try insertionSortSuite(allocator).run();
+    var insertion_suite = try insertionSortSuite(allocator);
+    defer insertion_suite.deinit();
+    var insertion_result = try insertion_suite.run();
     defer insertion_result.deinit();
-    var merge_result = try mergeSortSuite(allocator).run();
+    var insertion_in_place_suite = try insertionSortInPlaceSuite(allocator);
+    defer insertion_in_place_suite.deinit();
+    var insertion_in_place_result = try insertion_in_place_suite.run();
+    defer insertion_in_place_result.deinit();
+    var merge_suite = try mergeSortSuite(allocator);
+    defer merge_suite.deinit();
+    var merge_result = try merge_suite.run();
     defer merge_result.deinit();
-    var binary_result = try binarySearchSuite(allocator).run();
+    var binary_suite = try binarySearchSuite(allocator);
+    defer binary_suite.deinit();
+    var binary_result = try binary_suite.run();
     defer binary_result.deinit();
 
-    const results = [_]framework.AlgorithmSuiteResult{ insertion_result, merge_result, binary_result };
+    const results = [_]framework.AlgorithmSuiteResult{ insertion_result, insertion_in_place_result, merge_result, binary_result };
     return framework.AlgorithmTestRunner.printReport(&results);
 }
 
@@ -134,81 +166,27 @@ fn sortingSuite(
     allocator: std.mem.Allocator,
     algorithm_name: []const u8,
     algorithm: framework.Algorithm([]const i32, []i32),
-) framework.AlgorithmTestSuite([]const i32, []i32) {
-    const cases = struct {
-        const values = [_]SortCase{
-            .{
-                .name = "empty input",
-                .input_factory = emptyInput,
-                .expected_output = zigSort,
-                .equality = sliceEquality,
-                .budget = framework.ComplexityBudget.withLimits(5_000_000, 1024 * 1024),
-            },
-            .{
-                .name = "duplicates and negatives",
-                .input_factory = duplicatesAndNegativesInput,
-                .expected_output = zigSort,
-                .equality = sliceEquality,
-                .budget = framework.ComplexityBudget.withLimits(5_000_000, 1024 * 1024),
-            },
-            .{
-                .name = "reverse ordered",
-                .input_factory = reverseOrderedInput,
-                .expected_output = zigSort,
-                .equality = sliceEquality,
-                .budget = framework.ComplexityBudget.withLimits(5_000_000, 1024 * 1024),
-            },
-            .{
-                .name = "seeded random sample",
-                .input_factory = seededRandomInput,
-                .expected_output = zigSort,
-                .equality = sliceEquality,
-                .budget = framework.ComplexityBudget.withLimits(10_000_000, 2 * 1024 * 1024),
-            },
-        };
-    }.values;
-
-    return .{
-        .suite_name = "sorting",
-        .algorithm_name = algorithm_name,
-        .algorithm = algorithm,
-        .cases = &cases,
-        .options = framework.BenchmarkOptions.quick(),
+) !ExampleSuite([]const i32, []i32) {
+    const data = try agnostic.loadSortingCases(allocator);
+    errdefer allocator.free(data);
+    const cases = try agnostic.adaptSortingOutOfPlace(allocator, data);
+    errdefer allocator.free(cases);
+    const adapted = agnostic.AdaptedCases([]const i32, []i32){
+        .data = data,
+        .cases = cases,
         .allocator = allocator,
     };
-}
-
-fn emptyInput(_: std.mem.Allocator) ![]const i32 {
-    return &[_]i32{};
-}
-
-fn duplicatesAndNegativesInput(_: std.mem.Allocator) ![]const i32 {
-    return &[_]i32{ 7, -1, 3, 3, 0, -1, 11 };
-}
-
-fn reverseOrderedInput(_: std.mem.Allocator) ![]const i32 {
-    return &[_]i32{ 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-}
-
-fn seededRandomInput(allocator: std.mem.Allocator) ![]const i32 {
-    var random = std.Random.DefaultPrng.init(8675309);
-    const values = try allocator.alloc(i32, 64);
-    for (values) |*value| {
-        value.* = random.random().intRangeLessThan(i32, -5000, 5000);
-    }
-    return values;
-}
-
-fn firstElementInput(_: std.mem.Allocator) !SearchInput {
-    return .{ .values = &[_]i32{ 1, 3, 5, 7, 9 }, .target = 1 };
-}
-
-fn middleElementInput(_: std.mem.Allocator) !SearchInput {
-    return .{ .values = &[_]i32{ 1, 3, 5, 7, 9 }, .target = 5 };
-}
-
-fn absentElementInput(_: std.mem.Allocator) !SearchInput {
-    return .{ .values = &[_]i32{ 1, 3, 5, 7, 9 }, .target = 4 };
+    return .{
+        .adapted = adapted,
+        .suite = .{
+            .suite_name = "sorting",
+            .algorithm_name = algorithm_name,
+            .algorithm = algorithm,
+            .cases = adapted.cases,
+            .options = framework.BenchmarkOptions.quick(),
+            .allocator = allocator,
+        },
+    };
 }
 
 fn merge(allocator: std.mem.Allocator, left: []const i32, right: []const i32) ![]i32 {

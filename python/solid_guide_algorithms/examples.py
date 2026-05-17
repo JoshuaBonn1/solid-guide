@@ -1,28 +1,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from random import Random
+from typing import Any
 
+from .agnostic import adapt_in_place_list_algorithm, adapt_out_of_place, int_list, integer, load_cases
 from .framework import (
     Algorithm,
-    AlgorithmCase,
     AlgorithmTestRunner,
     AlgorithmTestSuite,
     BenchmarkOptions,
-    ComplexityBudget,
 )
 
 
 def insertion_sort(values: list[int]) -> list[int]:
     result = list(values)
-    for index in range(1, len(result)):
-        current = result[index]
-        cursor = index - 1
-        while cursor >= 0 and result[cursor] > current:
-            result[cursor + 1] = result[cursor]
-            cursor -= 1
-        result[cursor + 1] = current
+    insertion_sort_in_place(result)
     return result
+
+
+def insertion_sort_in_place(values: list[int]) -> None:
+    for index in range(1, len(values)):
+        current = values[index]
+        cursor = index - 1
+        while cursor >= 0 and values[cursor] > current:
+            values[cursor + 1] = values[cursor]
+            cursor -= 1
+        values[cursor + 1] = current
 
 
 def merge_sort(values: list[int]) -> list[int]:
@@ -72,35 +75,23 @@ def merge_sort_suite() -> AlgorithmTestSuite[list[int], list[int]]:
     return _sorting_suite("merge-sort", merge_sort)
 
 
-def binary_search_suite() -> AlgorithmTestSuite[SearchInput, int]:
-    budget = ComplexityBudget.with_limits(
-        max_average_duration_seconds=0.002,
-        max_memory_delta_bytes=256 * 1024,
+def insertion_sort_in_place_suite() -> AlgorithmTestSuite[list[int], list[int]]:
+    return _sorting_suite(
+        "insertion-sort-in-place",
+        adapt_in_place_list_algorithm(insertion_sort_in_place),
     )
+
+
+def binary_search_suite() -> AlgorithmTestSuite[SearchInput, int]:
     return AlgorithmTestSuite(
         suite_name="search",
         algorithm_name="binary-search",
         algorithm=binary_search,
         options=BenchmarkOptions.quick(),
-        cases=(
-            AlgorithmCase(
-                name="finds first element",
-                input_factory=lambda: SearchInput((1, 3, 5, 7, 9), 1),
-                expected_output=linear_search,
-                budget=budget,
-            ),
-            AlgorithmCase(
-                name="finds middle element",
-                input_factory=lambda: SearchInput((1, 3, 5, 7, 9), 5),
-                expected_output=linear_search,
-                budget=budget,
-            ),
-            AlgorithmCase(
-                name="reports absent element",
-                input_factory=lambda: SearchInput((1, 3, 5, 7, 9), 4),
-                expected_output=linear_search,
-                budget=budget,
-            ),
+        cases=adapt_out_of_place(
+            load_cases("search.tsv"),
+            _search_input,
+            integer,
         ),
     )
 
@@ -108,6 +99,7 @@ def binary_search_suite() -> AlgorithmTestSuite[SearchInput, int]:
 def run_examples() -> None:
     AlgorithmTestRunner.run_and_exit(
         insertion_sort_suite().run(),
+        insertion_sort_in_place_suite().run(),
         merge_sort_suite().run(),
         binary_search_suite().run(),
     )
@@ -117,44 +109,12 @@ def _sorting_suite(
     algorithm_name: str,
     algorithm: Algorithm[list[int], list[int]],
 ) -> AlgorithmTestSuite[list[int], list[int]]:
-    small_budget = ComplexityBudget.with_limits(
-        max_average_duration_seconds=0.005,
-        max_memory_delta_bytes=1024 * 1024,
-    )
     return AlgorithmTestSuite(
         suite_name="sorting",
         algorithm_name=algorithm_name,
         algorithm=algorithm,
         options=BenchmarkOptions.quick(),
-        cases=(
-            AlgorithmCase(
-                name="empty input",
-                input_factory=list,
-                expected_output=python_sort,
-                budget=small_budget,
-            ),
-            AlgorithmCase(
-                name="duplicates and negatives",
-                input_factory=lambda: [7, -1, 3, 3, 0, -1, 11],
-                expected_output=python_sort,
-                budget=small_budget,
-            ),
-            AlgorithmCase(
-                name="reverse ordered",
-                input_factory=lambda: [9, 8, 7, 6, 5, 4, 3, 2, 1],
-                expected_output=python_sort,
-                budget=small_budget,
-            ),
-            AlgorithmCase(
-                name="seeded random sample",
-                input_factory=lambda: _random_integers(64, 8675309),
-                expected_output=python_sort,
-                budget=ComplexityBudget.with_limits(
-                    max_average_duration_seconds=0.01,
-                    max_memory_delta_bytes=2 * 1024 * 1024,
-                ),
-            ),
-        ),
+        cases=adapt_out_of_place(load_cases("sorting.tsv"), int_list, int_list),
     )
 
 
@@ -174,6 +134,7 @@ def _merge(left: list[int], right: list[int]) -> list[int]:
     return merged
 
 
-def _random_integers(count: int, seed: int) -> list[int]:
-    random = Random(seed)
-    return [random.randrange(-5000, 5000) for _ in range(count)]
+def _search_input(value: Any) -> SearchInput:
+    if not isinstance(value, dict):
+        raise TypeError(f"expected record, got {type(value).__name__}")
+    return SearchInput(tuple(int_list(value["values"])), integer(value["target"]))

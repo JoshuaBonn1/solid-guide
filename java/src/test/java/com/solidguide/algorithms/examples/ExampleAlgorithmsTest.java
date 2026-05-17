@@ -17,6 +17,7 @@ public final class ExampleAlgorithmsTest {
     private static void verifiesSortingExamples() {
         List<AlgorithmSuiteResult<List<Integer>>> results = List.of(
                 ExampleHarness.insertionSortSuite().run(),
+                ExampleHarness.insertionSortInPlaceSuite().run(),
                 ExampleHarness.mergeSortSuite().run());
 
         for (AlgorithmSuiteResult<List<Integer>> result : results) {
