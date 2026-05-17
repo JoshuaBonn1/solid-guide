@@ -98,6 +98,12 @@ Current shared cases cover:
 - `cases/sorting.tsv`: list inputs/outputs usable by both out-of-place and
   in-place sorting algorithms.
 - `cases/search.tsv`: record input (`values`, `target`) with scalar output.
+- `cases/two_sum.tsv` (easy): hash-map lookup over integer lists.
+- `cases/valid_parentheses.tsv` (easy): stack validation over strings.
+- `cases/number_of_islands.tsv` (medium): DFS grid traversal over matrices.
+- `cases/course_schedule.tsv` (medium): graph cycle detection / topological
+  ordering over prerequisite edges.
+- `cases/trapping_rain_water.tsv` (hard): two-pointer scan over elevation lists.
 
 Add new structures by extending the shared value shape and implementing a small
 adapter in each language. Keep algorithm-specific construction in adapter code
@@ -121,7 +127,8 @@ Core classes live in `java/src/main/java/com/solidguide/algorithms/framework`:
   in-place list algorithms.
 
 Example suites live in `java/src/main/java/com/solidguide/algorithms/examples`
-and cover insertion sort, merge sort, and binary search.
+and cover insertion sort, merge sort, binary search, plus the five shared coding
+problem suites.
 
 ### Add a Java algorithm
 
@@ -160,8 +167,9 @@ Core classes live in `python/solid_guide_algorithms/framework.py`:
 - `solid_guide_algorithms.agnostic`: shared case loader plus adapters for
   neutral values and in-place list algorithms.
 
-Example suites live in `python/solid_guide_algorithms/examples.py` and mirror
-the Java examples.
+Example suites live in `python/solid_guide_algorithms/examples.py` and
+`python/solid_guide_algorithms/problems.py`; they mirror the Java examples and
+the five shared coding problem suites.
 
 ### Add a Python algorithm
 
@@ -214,10 +222,11 @@ Core declarations live in `zig/src/framework.zig`:
 - `agnostic.zig`: shared case parser plus adapters for neutral values and
   in-place / out-of-place case construction.
 
-Example suites live in `zig/src/examples.zig` and mirror the Java and Python
-examples. The Zig implementation measures memory by running each measured case
-inside a fresh `std.heap.ArenaAllocator` and recording the arena capacity used by
-that run.
+Example suites live in `zig/src/examples.zig` and `zig/src/problems.zig`; they
+mirror the Java and Python examples plus the five shared coding problem suites.
+The Zig implementation measures memory by running each measured case inside a
+fresh `std.heap.ArenaAllocator` and recording the arena capacity used by that
+run.
 
 ### Add a Zig algorithm
 
