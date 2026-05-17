@@ -22,6 +22,7 @@ algorithm examples easy to read.
 java/      Java implementation, examples, and self-tests
 python/    Python implementation, examples, and self-tests
 zig/       Zig implementation, examples, and self-tests
+cases/     Language-agnostic input/output case definitions
 scripts/   Root entrypoints for testing and benchmark reports
 ```
 
@@ -69,6 +70,39 @@ cd java
 mvn test
 ```
 
+## Language-agnostic inputs and outputs
+
+Shared algorithm cases live under `cases/`. Each case file is tab-separated and
+stores neutral input/output values plus portable budgets:
+
+```text
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+duplicates	[3,1,3,2]	[1,2,3,3]	5000000	1048576
+```
+
+The value cells use a JSON-like grammar for common algorithm data structures:
+scalars, strings, booleans, lists, matrices, records, and graph-style records
+such as `{"nodes":4,"edges":[[0,1],[1,2]]}`. Each language owns small adapter
+code that converts those neutral values into local types, for example
+`List<Integer>`, `list[int]`, or Zig slices.
+
+The adapter boundary is also where in-place algorithms are supported. A shared
+case only describes the value before and after the algorithm. Per-language
+adapters provide fresh mutable inputs for in-place algorithms, run the mutation,
+and return the mutated structure as the comparable output. Out-of-place
+algorithms receive the same neutral values through immutable or copy-on-write
+adapters.
+
+Current shared cases cover:
+
+- `cases/sorting.tsv`: list inputs/outputs usable by both out-of-place and
+  in-place sorting algorithms.
+- `cases/search.tsv`: record input (`values`, `target`) with scalar output.
+
+Add new structures by extending the shared value shape and implementing a small
+adapter in each language. Keep algorithm-specific construction in adapter code
+rather than duplicating cases per language.
+
 ## Java overview
 
 Core classes live in `java/src/main/java/com/solidguide/algorithms/framework`:
@@ -83,6 +117,8 @@ Core classes live in `java/src/main/java/com/solidguide/algorithms/framework`:
 - `AlgorithmSuiteResult` / `AlgorithmCaseResult`: structured results for
   assertions or reporting.
 - `AlgorithmTestRunner`: console reporter and process-exit helper.
+- `AgnosticCases`: shared case loader plus adapters for neutral values and
+  in-place list algorithms.
 
 Example suites live in `java/src/main/java/com/solidguide/algorithms/examples`
 and cover insertion sort, merge sort, and binary search.
@@ -121,6 +157,8 @@ Core classes live in `python/solid_guide_algorithms/framework.py`:
 - `AlgorithmSuiteResult` / `AlgorithmCaseResult`: structured results for
   assertions or reporting.
 - `AlgorithmTestRunner`: console reporter and process-exit helper.
+- `solid_guide_algorithms.agnostic`: shared case loader plus adapters for
+  neutral values and in-place list algorithms.
 
 Example suites live in `python/solid_guide_algorithms/examples.py` and mirror
 the Java examples.
@@ -173,6 +211,8 @@ Core declarations live in `zig/src/framework.zig`:
 - `AlgorithmSuiteResult` / `AlgorithmCaseResult`: structured results for
   assertions or reporting.
 - `AlgorithmTestRunner`: console reporter.
+- `agnostic.zig`: shared case parser plus adapters for neutral values and
+  in-place / out-of-place case construction.
 
 Example suites live in `zig/src/examples.zig` and mirror the Java and Python
 examples. The Zig implementation measures memory by running each measured case

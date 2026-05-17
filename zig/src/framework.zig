@@ -5,11 +5,11 @@ pub fn Algorithm(comptime Input: type, comptime Output: type) type {
 }
 
 pub fn InputFactory(comptime Input: type) type {
-    return *const fn (std.mem.Allocator) anyerror!Input;
+    return *const fn (std.mem.Allocator, ?*const anyopaque) anyerror!Input;
 }
 
 pub fn ExpectedOutput(comptime Input: type, comptime Output: type) type {
-    return *const fn (std.mem.Allocator, Input) anyerror!Output;
+    return *const fn (std.mem.Allocator, Input, ?*const anyopaque) anyerror!Output;
 }
 
 pub fn Equality(comptime Output: type) type {
@@ -88,6 +88,7 @@ pub fn AlgorithmCase(comptime Input: type, comptime Output: type) type {
         input_factory: InputFactory(Input),
         expected_output: ExpectedOutput(Input, Output),
         equality: Equality(Output),
+        context: ?*const anyopaque = null,
         budget: ComplexityBudget = ComplexityBudget.none(),
     };
 }
@@ -174,13 +175,13 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
             defer arena.deinit();
             const allocator = arena.allocator();
 
-            const expected_input = test_case.input_factory(allocator) catch |err| {
+            const expected_input = test_case.input_factory(allocator, test_case.context) catch |err| {
                 return failedCase(test_case.name, err);
             };
-            const expected = test_case.expected_output(allocator, expected_input) catch |err| {
+            const expected = test_case.expected_output(allocator, expected_input, test_case.context) catch |err| {
                 return failedCase(test_case.name, err);
             };
-            const actual_input = test_case.input_factory(allocator) catch |err| {
+            const actual_input = test_case.input_factory(allocator, test_case.context) catch |err| {
                 return failedCase(test_case.name, err);
             };
             const actual = self.algorithm(allocator, actual_input) catch |err| {
@@ -211,7 +212,7 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
                 var arena = std.heap.ArenaAllocator.init(self.allocator);
                 defer arena.deinit();
                 const allocator = arena.allocator();
-                const input = try test_case.input_factory(allocator);
+                const input = try test_case.input_factory(allocator, test_case.context);
                 const output = try self.algorithm(allocator, input);
                 std.mem.doNotOptimizeAway(output);
             }
@@ -228,7 +229,7 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
                 const allocator = arena.allocator();
 
                 const memory_before = if (self.options.measure_memory) arena.queryCapacity() else 0;
-                const input = try test_case.input_factory(allocator);
+                const input = try test_case.input_factory(allocator, test_case.context);
                 const started = try monotonicNowNs();
                 const output = try self.algorithm(allocator, input);
                 const elapsed_ns = (try monotonicNowNs()) - started;

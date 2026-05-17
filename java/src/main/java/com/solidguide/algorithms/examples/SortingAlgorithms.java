@@ -9,6 +9,11 @@ public final class SortingAlgorithms {
 
     public static List<Integer> insertionSort(List<Integer> input) {
         List<Integer> values = new ArrayList<>(input);
+        insertionSortInPlace(values);
+        return values;
+    }
+
+    public static void insertionSortInPlace(List<Integer> values) {
         for (int i = 1; i < values.size(); i++) {
             int current = values.get(i);
             int j = i - 1;
@@ -18,7 +23,6 @@ public final class SortingAlgorithms {
             }
             values.set(j + 1, current);
         }
-        return values;
     }
 
     public static List<Integer> mergeSort(List<Integer> input) {

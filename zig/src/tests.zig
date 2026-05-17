@@ -9,7 +9,7 @@ test "passing algorithms produce stats" {
         .{
             .name = "zero",
             .input_factory = zeroInput,
-            .expected_output = identity,
+            .expected_output = identityExpected,
             .equality = intEquality,
         },
     };
@@ -17,7 +17,7 @@ test "passing algorithms produce stats" {
     const suite = framework.AlgorithmTestSuite(i32, i32){
         .suite_name = "identity",
         .algorithm_name = "returns input",
-        .algorithm = identity,
+        .algorithm = identityAlgorithm,
         .cases = &cases,
         .options = .{
             .warmup_iterations = 0,
@@ -40,7 +40,7 @@ test "incorrect algorithms fail correctness" {
         .{
             .name = "same value",
             .input_factory = fortyOneInput,
-            .expected_output = identity,
+            .expected_output = identityExpected,
             .equality = intEquality,
         },
     };
@@ -67,7 +67,7 @@ test "budget violations fail cases" {
         .{
             .name = "duration budget",
             .input_factory = oneInput,
-            .expected_output = identity,
+            .expected_output = identityExpected,
             .equality = intEquality,
             .budget = framework.ComplexityBudget.withLimits(1, null),
         },
@@ -100,7 +100,7 @@ test "thrown errors fail cases" {
         .{
             .name = "error",
             .input_factory = oneInput,
-            .expected_output = identity,
+            .expected_output = identityExpected,
             .equality = intEquality,
         },
     };
@@ -122,35 +122,50 @@ test "thrown errors fail cases" {
 }
 
 test "example sorting suites pass" {
-    var insertion_result = try examples.insertionSortSuite(std.testing.allocator).run();
+    var insertion_suite = try examples.insertionSortSuite(std.testing.allocator);
+    defer insertion_suite.deinit();
+    var insertion_result = try insertion_suite.run();
     defer insertion_result.deinit();
-    var merge_result = try examples.mergeSortSuite(std.testing.allocator).run();
+    var insertion_in_place_suite = try examples.insertionSortInPlaceSuite(std.testing.allocator);
+    defer insertion_in_place_suite.deinit();
+    var insertion_in_place_result = try insertion_in_place_suite.run();
+    defer insertion_in_place_result.deinit();
+    var merge_suite = try examples.mergeSortSuite(std.testing.allocator);
+    defer merge_suite.deinit();
+    var merge_result = try merge_suite.run();
     defer merge_result.deinit();
 
     try std.testing.expect(insertion_result.passed());
+    try std.testing.expect(insertion_in_place_result.passed());
     try std.testing.expect(merge_result.passed());
 }
 
 test "example search suite passes" {
-    var result = try examples.binarySearchSuite(std.testing.allocator).run();
+    var suite = try examples.binarySearchSuite(std.testing.allocator);
+    defer suite.deinit();
+    var result = try suite.run();
     defer result.deinit();
 
     try std.testing.expect(result.passed());
 }
 
-fn zeroInput(_: std.mem.Allocator) !i32 {
+fn zeroInput(_: std.mem.Allocator, _: ?*const anyopaque) !i32 {
     return 0;
 }
 
-fn oneInput(_: std.mem.Allocator) !i32 {
+fn oneInput(_: std.mem.Allocator, _: ?*const anyopaque) !i32 {
     return 1;
 }
 
-fn fortyOneInput(_: std.mem.Allocator) !i32 {
+fn fortyOneInput(_: std.mem.Allocator, _: ?*const anyopaque) !i32 {
     return 41;
 }
 
-fn identity(_: std.mem.Allocator, value: i32) !i32 {
+fn identityAlgorithm(_: std.mem.Allocator, value: i32) !i32 {
+    return value;
+}
+
+fn identityExpected(_: std.mem.Allocator, value: i32, _: ?*const anyopaque) !i32 {
     return value;
 }
 

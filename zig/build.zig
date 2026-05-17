@@ -9,6 +9,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    addCaseFiles(b, exe_module);
     const exe = b.addExecutable(.{
         .name = "solid-guide-zig",
         .root_module = exe_module,
@@ -28,6 +29,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    addCaseFiles(b, test_module);
     const tests = b.addTest(.{
         .root_module = test_module,
     });
@@ -35,4 +37,13 @@ pub fn build(b: *std.Build) void {
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run unit tests");
     test_step.dependOn(&run_tests.step);
+}
+
+fn addCaseFiles(b: *std.Build, module: *std.Build.Module) void {
+    module.addAnonymousImport("sorting_cases", .{
+        .root_source_file = b.path("../cases/sorting.tsv"),
+    });
+    module.addAnonymousImport("search_cases", .{
+        .root_source_file = b.path("../cases/search.tsv"),
+    });
 }
