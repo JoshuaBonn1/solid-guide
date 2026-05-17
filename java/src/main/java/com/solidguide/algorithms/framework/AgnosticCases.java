@@ -91,6 +91,34 @@ public final class AgnosticCases {
         return Integer.parseInt(value.trim());
     }
 
+    public static boolean parseBoolean(String value) {
+        return Boolean.parseBoolean(value.trim());
+    }
+
+    public static String parseString(String value) {
+        String trimmed = value.trim();
+        if (!trimmed.startsWith("\"") || !trimmed.endsWith("\"")) {
+            throw new IllegalArgumentException("expected string value: " + value);
+        }
+        return trimmed.substring(1, trimmed.length() - 1);
+    }
+
+    public static List<List<Integer>> parseIntMatrix(String value) {
+        String trimmed = value.trim();
+        if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+            throw new IllegalArgumentException("expected matrix value: " + value);
+        }
+        String body = trimmed.substring(1, trimmed.length() - 1).trim();
+        if (body.isEmpty()) {
+            return List.of();
+        }
+        List<List<Integer>> rows = new ArrayList<>();
+        for (String row : splitTopLevel(body)) {
+            rows.add(parseIntList(row));
+        }
+        return List.copyOf(rows);
+    }
+
     public static Map<String, String> parseFlatRecord(String value) {
         String trimmed = value.trim();
         if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {

@@ -38,3 +38,12 @@ scalars, sequences, matrices, records, and graph-like records such as
 `{"nodes":4,"edges":[[0,1],[1,2]]}`. Add fields or new files as algorithms need
 more shape; keep language-specific construction in adapter code rather than in
 these shared case files.
+
+Current problem fixtures include:
+
+- `sorting.tsv` and `search.tsv`: baseline examples used by every language.
+- `two_sum.tsv` (easy): hash-map lookup over an integer list.
+- `valid_parentheses.tsv` (easy): stack validation over a string.
+- `number_of_islands.tsv` (medium): grid traversal over a matrix.
+- `course_schedule.tsv` (medium): graph cycle detection / topological ordering.
+- `trapping_rain_water.tsv` (hard): two-pointer scan over an elevation list.

@@ -89,9 +89,27 @@ def int_list(value: Any) -> list[int]:
     return [int(item) for item in value]
 
 
+def int_matrix(value: Any) -> list[list[int]]:
+    if not isinstance(value, list):
+        raise TypeError(f"expected matrix, got {type(value).__name__}")
+    return [int_list(row) for row in value]
+
+
 def integer(value: Any) -> int:
     if not isinstance(value, int):
         raise TypeError(f"expected int, got {type(value).__name__}")
+    return value
+
+
+def boolean(value: Any) -> bool:
+    if not isinstance(value, bool):
+        raise TypeError(f"expected bool, got {type(value).__name__}")
+    return value
+
+
+def string(value: Any) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"expected str, got {type(value).__name__}")
     return value
 
 

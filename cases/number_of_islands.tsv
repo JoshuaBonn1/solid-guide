@@ -1,0 +1,9 @@
+# solid-guide-cases-v1
+# difficulty: medium
+# problem: number-of-islands
+# input: matrix<int>
+# output: int
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+three islands	[[1,1,0,0],[1,1,0,0],[0,0,1,0],[0,0,0,1]]	3	50000000	8388608
+single island	[[1,1,1],[0,1,0],[1,1,1]]	1	50000000	8388608
+empty water	[[0,0,0],[0,0,0]]	0	50000000	8388608

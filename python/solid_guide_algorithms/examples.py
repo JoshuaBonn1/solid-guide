@@ -97,11 +97,14 @@ def binary_search_suite() -> AlgorithmTestSuite[SearchInput, int]:
 
 
 def run_examples() -> None:
+    from .problems import problem_suites
+
     AlgorithmTestRunner.run_and_exit(
         insertion_sort_suite().run(),
         insertion_sort_in_place_suite().run(),
         merge_sort_suite().run(),
         binary_search_suite().run(),
+        *(suite.run() for suite in problem_suites()),
     )
 
 
