@@ -104,6 +104,12 @@ Current shared cases cover:
 - `cases/course_schedule.tsv` (medium): graph cycle detection / topological
   ordering over prerequisite edges.
 - `cases/trapping_rain_water.tsv` (hard): two-pointer scan over elevation lists.
+- `cases/best_time_stock.tsv` (easy): one-pass minimum tracking over prices.
+- `cases/valid_anagram.tsv` (easy): character frequency counting over strings.
+- `cases/maximum_subarray.tsv` (medium): Kadane dynamic programming over lists.
+- `cases/merge_intervals.tsv` (medium): interval sorting and merging over
+  matrices.
+- `cases/edit_distance.tsv` (hard): dynamic programming over two strings.
 
 Add new structures by extending the shared value shape and implementing a small
 adapter in each language. Keep algorithm-specific construction in adapter code
@@ -127,7 +133,7 @@ Core classes live in `java/src/main/java/com/solidguide/algorithms/framework`:
   in-place list algorithms.
 
 Example suites live in `java/src/main/java/com/solidguide/algorithms/examples`
-and cover insertion sort, merge sort, binary search, plus the five shared coding
+and cover insertion sort, merge sort, binary search, plus the shared coding
 problem suites.
 
 ### Add a Java algorithm
@@ -169,7 +175,7 @@ Core classes live in `python/solid_guide_algorithms/framework.py`:
 
 Example suites live in `python/solid_guide_algorithms/examples.py` and
 `python/solid_guide_algorithms/problems.py`; they mirror the Java examples and
-the five shared coding problem suites.
+the shared coding problem suites.
 
 ### Add a Python algorithm
 
@@ -223,7 +229,7 @@ Core declarations live in `zig/src/framework.zig`:
   in-place / out-of-place case construction.
 
 Example suites live in `zig/src/examples.zig` and `zig/src/problems.zig`; they
-mirror the Java and Python examples plus the five shared coding problem suites.
+mirror the Java and Python examples plus the shared coding problem suites.
 The Zig implementation measures memory by running each measured case inside a
 fresh `std.heap.ArenaAllocator` and recording the arena capacity used by that
 run.

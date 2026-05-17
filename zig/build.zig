@@ -61,4 +61,19 @@ fn addCaseFiles(b: *std.Build, module: *std.Build.Module) void {
     module.addAnonymousImport("trapping_rain_water_cases", .{
         .root_source_file = b.path("../cases/trapping_rain_water.tsv"),
     });
+    module.addAnonymousImport("best_time_stock_cases", .{
+        .root_source_file = b.path("../cases/best_time_stock.tsv"),
+    });
+    module.addAnonymousImport("valid_anagram_cases", .{
+        .root_source_file = b.path("../cases/valid_anagram.tsv"),
+    });
+    module.addAnonymousImport("maximum_subarray_cases", .{
+        .root_source_file = b.path("../cases/maximum_subarray.tsv"),
+    });
+    module.addAnonymousImport("merge_intervals_cases", .{
+        .root_source_file = b.path("../cases/merge_intervals.tsv"),
+    });
+    module.addAnonymousImport("edit_distance_cases", .{
+        .root_source_file = b.path("../cases/edit_distance.tsv"),
+    });
 }

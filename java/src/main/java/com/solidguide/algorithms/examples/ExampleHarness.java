@@ -23,7 +23,12 @@ public final class ExampleHarness {
                 validParenthesesSuite().run(),
                 numberOfIslandsSuite().run(),
                 courseScheduleSuite().run(),
-                trappingRainWaterSuite().run());
+                trappingRainWaterSuite().run(),
+                bestTimeStockSuite().run(),
+                validAnagramSuite().run(),
+                maximumSubarraySuite().run(),
+                mergeIntervalsSuite().run(),
+                editDistanceSuite().run());
     }
 
     public static AlgorithmTestSuite<List<Integer>, List<Integer>> insertionSortSuite() {
@@ -123,6 +128,76 @@ public final class ExampleHarness {
         return builder.build();
     }
 
+    public static AlgorithmTestSuite<List<Integer>, Integer> bestTimeStockSuite() {
+        AlgorithmTestSuite.Builder<List<Integer>, Integer> builder =
+                AlgorithmTestSuite.<List<Integer>, Integer>builder("best-time-stock")
+                        .algorithm("one-pass-min-price", CodingProblems::maxProfit)
+                        .options(BenchmarkOptions.quick());
+        for (var testCase : AgnosticCases.adaptOutOfPlace(
+                AgnosticCases.load("best_time_stock.tsv"),
+                AgnosticCases::parseIntList,
+                AgnosticCases::parseInt)) {
+            builder.addCase(testCase);
+        }
+        return builder.build();
+    }
+
+    public static AlgorithmTestSuite<CodingProblems.AnagramInput, Boolean> validAnagramSuite() {
+        AlgorithmTestSuite.Builder<CodingProblems.AnagramInput, Boolean> builder =
+                AlgorithmTestSuite.<CodingProblems.AnagramInput, Boolean>builder("valid-anagram")
+                        .algorithm("frequency-count", CodingProblems::validAnagram)
+                        .options(BenchmarkOptions.quick());
+        for (var testCase : AgnosticCases.adaptOutOfPlace(
+                AgnosticCases.load("valid_anagram.tsv"),
+                ExampleHarness::anagramInput,
+                AgnosticCases::parseBoolean)) {
+            builder.addCase(testCase);
+        }
+        return builder.build();
+    }
+
+    public static AlgorithmTestSuite<List<Integer>, Integer> maximumSubarraySuite() {
+        AlgorithmTestSuite.Builder<List<Integer>, Integer> builder =
+                AlgorithmTestSuite.<List<Integer>, Integer>builder("maximum-subarray")
+                        .algorithm("kadane-scan", CodingProblems::maximumSubarray)
+                        .options(BenchmarkOptions.quick());
+        for (var testCase : AgnosticCases.adaptOutOfPlace(
+                AgnosticCases.load("maximum_subarray.tsv"),
+                AgnosticCases::parseIntList,
+                AgnosticCases::parseInt)) {
+            builder.addCase(testCase);
+        }
+        return builder.build();
+    }
+
+    public static AlgorithmTestSuite<List<List<Integer>>, List<List<Integer>>> mergeIntervalsSuite() {
+        AlgorithmTestSuite.Builder<List<List<Integer>>, List<List<Integer>>> builder =
+                AlgorithmTestSuite.<List<List<Integer>>, List<List<Integer>>>builder("merge-intervals")
+                        .algorithm("sort-and-merge", CodingProblems::mergeIntervals)
+                        .options(BenchmarkOptions.quick());
+        for (var testCase : AgnosticCases.adaptOutOfPlace(
+                AgnosticCases.load("merge_intervals.tsv"),
+                AgnosticCases::parseIntMatrix,
+                AgnosticCases::parseIntMatrix)) {
+            builder.addCase(testCase);
+        }
+        return builder.build();
+    }
+
+    public static AlgorithmTestSuite<CodingProblems.EditDistanceInput, Integer> editDistanceSuite() {
+        AlgorithmTestSuite.Builder<CodingProblems.EditDistanceInput, Integer> builder =
+                AlgorithmTestSuite.<CodingProblems.EditDistanceInput, Integer>builder("edit-distance")
+                        .algorithm("dynamic-programming", CodingProblems::editDistance)
+                        .options(BenchmarkOptions.quick());
+        for (var testCase : AgnosticCases.adaptOutOfPlace(
+                AgnosticCases.load("edit_distance.tsv"),
+                ExampleHarness::editDistanceInput,
+                AgnosticCases::parseInt)) {
+            builder.addCase(testCase);
+        }
+        return builder.build();
+    }
+
     private static AlgorithmTestSuite<List<Integer>, List<Integer>> sortingSuite(
             String algorithmName,
             com.solidguide.algorithms.framework.Algorithm<List<Integer>, List<Integer>> algorithm) {
@@ -157,5 +232,19 @@ public final class ExampleHarness {
         return new CodingProblems.CourseScheduleInput(
                 AgnosticCases.parseInt(record.get("numCourses")),
                 AgnosticCases.parseIntMatrix(record.get("prerequisites")));
+    }
+
+    private static CodingProblems.AnagramInput anagramInput(String value) {
+        Map<String, String> record = AgnosticCases.parseFlatRecord(value);
+        return new CodingProblems.AnagramInput(
+                AgnosticCases.parseString(record.get("s")),
+                AgnosticCases.parseString(record.get("t")));
+    }
+
+    private static CodingProblems.EditDistanceInput editDistanceInput(String value) {
+        Map<String, String> record = AgnosticCases.parseFlatRecord(value);
+        return new CodingProblems.EditDistanceInput(
+                AgnosticCases.parseString(record.get("word1")),
+                AgnosticCases.parseString(record.get("word2")));
     }
 }

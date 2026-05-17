@@ -1,0 +1,9 @@
+# solid-guide-cases-v1
+# difficulty: easy
+# problem: valid-anagram
+# input: record{s:string,t:string}
+# output: bool
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+simple anagram	{"s":"anagram","t":"nagaram"}	true	50000000	8388608
+length mismatch	{"s":"rat","t":"car"}	false	50000000	8388608
+repeated letters	{"s":"aacc","t":"ccac"}	false	50000000	8388608

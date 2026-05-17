@@ -1,0 +1,9 @@
+# solid-guide-cases-v1
+# difficulty: hard
+# problem: edit-distance
+# input: record{word1:string,word2:string}
+# output: int
+name	input	output	max_average_duration_ns	max_memory_delta_bytes
+horse to ros	{"word1":"horse","word2":"ros"}	3	50000000	8388608
+intention to execution	{"word1":"intention","word2":"execution"}	5	50000000	8388608
+empty source	{"word1":"","word2":"abc"}	3	50000000	8388608

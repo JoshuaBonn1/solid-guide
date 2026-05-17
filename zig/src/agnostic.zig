@@ -57,6 +57,26 @@ pub fn loadTrappingRainWaterCases(allocator: std.mem.Allocator) ![]CaseData {
     return parseCases(allocator, @embedFile("trapping_rain_water_cases"));
 }
 
+pub fn loadBestTimeStockCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("best_time_stock_cases"));
+}
+
+pub fn loadValidAnagramCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("valid_anagram_cases"));
+}
+
+pub fn loadMaximumSubarrayCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("maximum_subarray_cases"));
+}
+
+pub fn loadMergeIntervalsCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("merge_intervals_cases"));
+}
+
+pub fn loadEditDistanceCases(allocator: std.mem.Allocator) ![]CaseData {
+    return parseCases(allocator, @embedFile("edit_distance_cases"));
+}
+
 pub fn adaptSortingOutOfPlace(
     allocator: std.mem.Allocator,
     data: []CaseData,
