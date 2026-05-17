@@ -1,0 +1,2 @@
+# solid-guide
+Algorithm exploration
