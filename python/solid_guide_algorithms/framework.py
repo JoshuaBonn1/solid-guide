@@ -233,7 +233,8 @@ class AlgorithmTestSuite(Generic[I, O]):
 
     def _measure(self, test_case: AlgorithmCase[I, O]) -> ExecutionStats:
         for _ in range(self.options.warmup_iterations):
-            self._consume(self.algorithm(test_case.input_factory()))
+            input_value = test_case.input_factory()
+            self._consume(self.algorithm(input_value))
 
         total_duration_ns = 0
         min_duration_ns = sys.maxsize
@@ -246,6 +247,7 @@ class AlgorithmTestSuite(Generic[I, O]):
                 gc.collect()
 
             memory_delta = 0
+            input_value = test_case.input_factory()
             if self.options.measure_memory:
                 tracemalloc.start()
                 tracemalloc.reset_peak()
@@ -254,7 +256,7 @@ class AlgorithmTestSuite(Generic[I, O]):
                 memory_before = 0
 
             started_ns = time.perf_counter_ns()
-            output = self.algorithm(test_case.input_factory())
+            output = self.algorithm(input_value)
             elapsed_ns = time.perf_counter_ns() - started_ns
             self._consume(output)
 

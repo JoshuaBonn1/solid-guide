@@ -273,7 +273,10 @@ const suite = framework.AlgorithmTestSuite([]const i32, []i32){
 ```
 
 Use input suppliers that create fresh data for every run, especially for
-algorithms that mutate arrays, lists, or graph structures. Memory measurements
-use coarse runtime snapshots (`Runtime` heap checks in Java and `tracemalloc` in
-Python, arena capacity in Zig), so they should be treated as regression signals
-rather than exact allocation counts.
+algorithms that mutate arrays, lists, or graph structures. Benchmark timing
+starts after the input supplier/adapters finish and stops as soon as the
+candidate algorithm returns, so input adaptation and output comparison are not
+included in speed measurements. Memory measurements use the same algorithm-only
+window with coarse runtime snapshots (`Runtime` heap checks in Java and
+`tracemalloc` in Python, arena capacity in Zig), so they should be treated as
+regression signals rather than exact allocation counts.

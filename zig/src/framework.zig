@@ -228,8 +228,8 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
                 defer arena.deinit();
                 const allocator = arena.allocator();
 
-                const memory_before = if (self.options.measure_memory) arena.queryCapacity() else 0;
                 const input = try test_case.input_factory(allocator, test_case.context);
+                const memory_before = if (self.options.measure_memory) arena.queryCapacity() else 0;
                 const started = try monotonicNowNs();
                 const output = try self.algorithm(allocator, input);
                 const elapsed_ns = (try monotonicNowNs()) - started;
