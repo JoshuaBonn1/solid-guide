@@ -3,7 +3,4 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-"$ROOT_DIR/scripts/test-java"
-"$ROOT_DIR/scripts/test-python"
-
-echo "All language tests passed."
+PYTHONPATH="$ROOT_DIR/python" python3 -m solid_guide_algorithms
