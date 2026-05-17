@@ -20,6 +20,18 @@ class CourseScheduleInput:
     prerequisites: tuple[tuple[int, int], ...]
 
 
+@dataclass(frozen=True)
+class AnagramInput:
+    s: str
+    t: str
+
+
+@dataclass(frozen=True)
+class EditDistanceInput:
+    word1: str
+    word2: str
+
+
 def two_sum(input_data: TwoSumInput) -> list[int]:
     seen: dict[int, int] = {}
     for index, value in enumerate(input_data.nums):
@@ -106,6 +118,68 @@ def trap_rain_water(heights: list[int]) -> int:
     return water
 
 
+def max_profit(prices: list[int]) -> int:
+    min_price = 10**18
+    best_profit = 0
+    for price in prices:
+        min_price = min(min_price, price)
+        best_profit = max(best_profit, price - min_price)
+    return best_profit
+
+
+def valid_anagram(input_data: AnagramInput) -> bool:
+    if len(input_data.s) != len(input_data.t):
+        return False
+    counts = [0] * 26
+    for left, right in zip(input_data.s, input_data.t):
+        counts[ord(left) - ord("a")] += 1
+        counts[ord(right) - ord("a")] -= 1
+    return all(count == 0 for count in counts)
+
+
+def maximum_subarray(nums: list[int]) -> int:
+    current = nums[0]
+    best = nums[0]
+    for value in nums[1:]:
+        current = max(value, current + value)
+        best = max(best, current)
+    return best
+
+
+def merge_intervals(intervals: list[list[int]]) -> list[list[int]]:
+    if not intervals:
+        return []
+    sorted_intervals = sorted(intervals, key=lambda interval: interval[0])
+    merged = [list(sorted_intervals[0])]
+    for start, end in sorted_intervals[1:]:
+        if start <= merged[-1][1]:
+            merged[-1][1] = max(merged[-1][1], end)
+        else:
+            merged.append([start, end])
+    return merged
+
+
+def edit_distance(input_data: EditDistanceInput) -> int:
+    rows = len(input_data.word1)
+    cols = len(input_data.word2)
+    dp = [[0] * (cols + 1) for _ in range(rows + 1)]
+    for row in range(rows + 1):
+        dp[row][0] = row
+    for col in range(cols + 1):
+        dp[0][col] = col
+    for row in range(1, rows + 1):
+        for col in range(1, cols + 1):
+            if input_data.word1[row - 1] == input_data.word2[col - 1]:
+                dp[row][col] = dp[row - 1][col - 1]
+            else:
+                dp[row][col] = 1 + min(
+                    dp[row - 1][col - 1],
+                    dp[row - 1][col],
+                    dp[row][col - 1],
+                )
+    return dp[rows][cols]
+
+
 def two_sum_suite() -> AlgorithmTestSuite[TwoSumInput, list[int]]:
     return AlgorithmTestSuite(
         suite_name="two-sum",
@@ -156,6 +230,56 @@ def trapping_rain_water_suite() -> AlgorithmTestSuite[list[int], int]:
     )
 
 
+def best_time_stock_suite() -> AlgorithmTestSuite[list[int], int]:
+    return AlgorithmTestSuite(
+        suite_name="best-time-stock",
+        algorithm_name="one-pass-min-price",
+        algorithm=max_profit,
+        options=BenchmarkOptions.quick(),
+        cases=adapt_out_of_place(load_cases("best_time_stock.tsv"), int_list, integer),
+    )
+
+
+def valid_anagram_suite() -> AlgorithmTestSuite[AnagramInput, bool]:
+    return AlgorithmTestSuite(
+        suite_name="valid-anagram",
+        algorithm_name="frequency-count",
+        algorithm=valid_anagram,
+        options=BenchmarkOptions.quick(),
+        cases=adapt_out_of_place(load_cases("valid_anagram.tsv"), _anagram_input, boolean),
+    )
+
+
+def maximum_subarray_suite() -> AlgorithmTestSuite[list[int], int]:
+    return AlgorithmTestSuite(
+        suite_name="maximum-subarray",
+        algorithm_name="kadane-scan",
+        algorithm=maximum_subarray,
+        options=BenchmarkOptions.quick(),
+        cases=adapt_out_of_place(load_cases("maximum_subarray.tsv"), int_list, integer),
+    )
+
+
+def merge_intervals_suite() -> AlgorithmTestSuite[list[list[int]], list[list[int]]]:
+    return AlgorithmTestSuite(
+        suite_name="merge-intervals",
+        algorithm_name="sort-and-merge",
+        algorithm=merge_intervals,
+        options=BenchmarkOptions.quick(),
+        cases=adapt_out_of_place(load_cases("merge_intervals.tsv"), int_matrix, int_matrix),
+    )
+
+
+def edit_distance_suite() -> AlgorithmTestSuite[EditDistanceInput, int]:
+    return AlgorithmTestSuite(
+        suite_name="edit-distance",
+        algorithm_name="dynamic-programming",
+        algorithm=edit_distance,
+        options=BenchmarkOptions.quick(),
+        cases=adapt_out_of_place(load_cases("edit_distance.tsv"), _edit_distance_input, integer),
+    )
+
+
 def problem_suites() -> tuple[AlgorithmTestSuite[Any, Any], ...]:
     return (
         two_sum_suite(),
@@ -163,6 +287,11 @@ def problem_suites() -> tuple[AlgorithmTestSuite[Any, Any], ...]:
         number_of_islands_suite(),
         course_schedule_suite(),
         trapping_rain_water_suite(),
+        best_time_stock_suite(),
+        valid_anagram_suite(),
+        maximum_subarray_suite(),
+        merge_intervals_suite(),
+        edit_distance_suite(),
     )
 
 
@@ -179,3 +308,15 @@ def _course_schedule_input(value: Any) -> CourseScheduleInput:
         integer(value["numCourses"]),
         tuple((row[0], row[1]) for row in int_matrix(value["prerequisites"])),
     )
+
+
+def _anagram_input(value: Any) -> AnagramInput:
+    if not isinstance(value, dict):
+        raise TypeError(f"expected record, got {type(value).__name__}")
+    return AnagramInput(string(value["s"]), string(value["t"]))
+
+
+def _edit_distance_input(value: Any) -> EditDistanceInput:
+    if not isinstance(value, dict):
+        raise TypeError(f"expected record, got {type(value).__name__}")
+    return EditDistanceInput(string(value["word1"]), string(value["word2"]))

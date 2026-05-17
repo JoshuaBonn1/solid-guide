@@ -12,6 +12,21 @@ pub const CourseScheduleInput = struct {
     prerequisites: []const []const i32,
 };
 
+pub const AnagramInput = struct {
+    s: []const u8,
+    t: []const u8,
+};
+
+pub const EditDistanceInput = struct {
+    word1: []const u8,
+    word2: []const u8,
+};
+
+const Interval = struct {
+    start: i32,
+    end: i32,
+};
+
 pub fn ProblemSuite(comptime Input: type, comptime Output: type) type {
     return struct {
         adapted: agnostic.AdaptedCases(Input, Output),
@@ -141,6 +156,98 @@ pub fn trapRainWater(_: std.mem.Allocator, heights: []const i32) !i32 {
     return water;
 }
 
+pub fn maxProfit(_: std.mem.Allocator, prices: []const i32) !i32 {
+    var min_price: i32 = std.math.maxInt(i32);
+    var best_profit: i32 = 0;
+    for (prices) |price| {
+        min_price = @min(min_price, price);
+        best_profit = @max(best_profit, price - min_price);
+    }
+    return best_profit;
+}
+
+pub fn validAnagram(_: std.mem.Allocator, input: AnagramInput) !bool {
+    if (input.s.len != input.t.len) return false;
+    var counts = [_]i32{0} ** 26;
+    for (input.s, input.t) |left, right| {
+        counts[left - 'a'] += 1;
+        counts[right - 'a'] -= 1;
+    }
+    for (counts) |count| {
+        if (count != 0) return false;
+    }
+    return true;
+}
+
+pub fn maximumSubarray(_: std.mem.Allocator, nums: []const i32) !i32 {
+    var current = nums[0];
+    var best = nums[0];
+    for (nums[1..]) |value| {
+        current = @max(value, current + value);
+        best = @max(best, current);
+    }
+    return best;
+}
+
+pub fn mergeIntervals(allocator: std.mem.Allocator, intervals: []const []const i32) ![]const []const i32 {
+    if (intervals.len == 0) return allocator.alloc([]const i32, 0);
+    const sorted = try allocator.alloc(Interval, intervals.len);
+    for (intervals, 0..) |interval, index| {
+        sorted[index] = .{ .start = interval[0], .end = interval[1] };
+    }
+    std.sort.heap(Interval, sorted, {}, intervalLessThan);
+
+    const merged_buffer = try allocator.alloc(Interval, intervals.len);
+    var merged_count: usize = 0;
+    var current = sorted[0];
+    for (sorted[1..]) |interval| {
+        if (interval.start <= current.end) {
+            current.end = @max(current.end, interval.end);
+        } else {
+            merged_buffer[merged_count] = current;
+            merged_count += 1;
+            current = interval;
+        }
+    }
+    merged_buffer[merged_count] = current;
+    merged_count += 1;
+
+    const output = try allocator.alloc([]const i32, merged_count);
+    for (merged_buffer[0..merged_count], 0..) |interval, index| {
+        const row = try allocator.alloc(i32, 2);
+        row[0] = interval.start;
+        row[1] = interval.end;
+        output[index] = row;
+    }
+    return output;
+}
+
+pub fn editDistance(allocator: std.mem.Allocator, input: EditDistanceInput) !i32 {
+    const rows = input.word1.len;
+    const cols = input.word2.len;
+    const dp = try allocator.alloc(i32, (rows + 1) * (cols + 1));
+    for (0..rows + 1) |row| {
+        dp[row * (cols + 1)] = @as(i32, @intCast(row));
+    }
+    for (0..cols + 1) |col| {
+        dp[col] = @as(i32, @intCast(col));
+    }
+    for (1..rows + 1) |row| {
+        for (1..cols + 1) |col| {
+            const index = row * (cols + 1) + col;
+            if (input.word1[row - 1] == input.word2[col - 1]) {
+                dp[index] = dp[(row - 1) * (cols + 1) + (col - 1)];
+            } else {
+                dp[index] = 1 + @min(
+                    dp[(row - 1) * (cols + 1) + (col - 1)],
+                    @min(dp[(row - 1) * (cols + 1) + col], dp[row * (cols + 1) + (col - 1)]),
+                );
+            }
+        }
+    }
+    return dp[rows * (cols + 1) + cols];
+}
+
 pub fn twoSumSuite(allocator: std.mem.Allocator) !ProblemSuite(TwoSumInput, []i32) {
     const data = try agnostic.loadTwoSumCases(allocator);
     return buildSuite(TwoSumInput, []i32, allocator, data, "two-sum", "hash-map-two-sum", twoSum, twoSumInput, intListOutput, sliceEquality);
@@ -166,6 +273,31 @@ pub fn trappingRainWaterSuite(allocator: std.mem.Allocator) !ProblemSuite([]cons
     return buildSuite([]const i32, i32, allocator, data, "trapping-rain-water", "two-pointer-scan", trapRainWater, intListInput, intOutputListInput, intEquality);
 }
 
+pub fn bestTimeStockSuite(allocator: std.mem.Allocator) !ProblemSuite([]const i32, i32) {
+    const data = try agnostic.loadBestTimeStockCases(allocator);
+    return buildSuite([]const i32, i32, allocator, data, "best-time-stock", "one-pass-min-price", maxProfit, intListInput, intOutputListInput, intEquality);
+}
+
+pub fn validAnagramSuite(allocator: std.mem.Allocator) !ProblemSuite(AnagramInput, bool) {
+    const data = try agnostic.loadValidAnagramCases(allocator);
+    return buildSuite(AnagramInput, bool, allocator, data, "valid-anagram", "frequency-count", validAnagram, anagramInput, boolOutputAnagramInput, boolEquality);
+}
+
+pub fn maximumSubarraySuite(allocator: std.mem.Allocator) !ProblemSuite([]const i32, i32) {
+    const data = try agnostic.loadMaximumSubarrayCases(allocator);
+    return buildSuite([]const i32, i32, allocator, data, "maximum-subarray", "kadane-scan", maximumSubarray, intListInput, intOutputListInput, intEquality);
+}
+
+pub fn mergeIntervalsSuite(allocator: std.mem.Allocator) !ProblemSuite([]const []const i32, []const []const i32) {
+    const data = try agnostic.loadMergeIntervalsCases(allocator);
+    return buildSuite([]const []const i32, []const []const i32, allocator, data, "merge-intervals", "sort-and-merge", mergeIntervals, matrixInput, matrixOutput, matrixEquality);
+}
+
+pub fn editDistanceSuite(allocator: std.mem.Allocator) !ProblemSuite(EditDistanceInput, i32) {
+    const data = try agnostic.loadEditDistanceCases(allocator);
+    return buildSuite(EditDistanceInput, i32, allocator, data, "edit-distance", "dynamic-programming", editDistance, editDistanceInput, intOutputEditDistanceInput, intEquality);
+}
+
 pub fn runProblems(allocator: std.mem.Allocator) !bool {
     var two_sum_suite = try twoSumSuite(allocator);
     defer two_sum_suite.deinit();
@@ -187,8 +319,39 @@ pub fn runProblems(allocator: std.mem.Allocator) !bool {
     defer rain_suite.deinit();
     var rain_result = try rain_suite.run();
     defer rain_result.deinit();
+    var stock_suite = try bestTimeStockSuite(allocator);
+    defer stock_suite.deinit();
+    var stock_result = try stock_suite.run();
+    defer stock_result.deinit();
+    var anagram_suite = try validAnagramSuite(allocator);
+    defer anagram_suite.deinit();
+    var anagram_result = try anagram_suite.run();
+    defer anagram_result.deinit();
+    var max_subarray_suite = try maximumSubarraySuite(allocator);
+    defer max_subarray_suite.deinit();
+    var max_subarray_result = try max_subarray_suite.run();
+    defer max_subarray_result.deinit();
+    var intervals_suite = try mergeIntervalsSuite(allocator);
+    defer intervals_suite.deinit();
+    var intervals_result = try intervals_suite.run();
+    defer intervals_result.deinit();
+    var edit_suite = try editDistanceSuite(allocator);
+    defer edit_suite.deinit();
+    var edit_result = try edit_suite.run();
+    defer edit_result.deinit();
 
-    const results = [_]framework.AlgorithmSuiteResult{ two_sum_result, valid_result, islands_result, courses_result, rain_result };
+    const results = [_]framework.AlgorithmSuiteResult{
+        two_sum_result,
+        valid_result,
+        islands_result,
+        courses_result,
+        rain_result,
+        stock_result,
+        anagram_result,
+        max_subarray_result,
+        intervals_result,
+        edit_result,
+    };
     return framework.AlgorithmTestRunner.printReport(&results);
 }
 
@@ -251,6 +414,22 @@ fn courseScheduleInput(allocator: std.mem.Allocator, context: ?*const anyopaque)
     };
 }
 
+fn anagramInput(_: std.mem.Allocator, context: ?*const anyopaque) !AnagramInput {
+    const case_data = contextData(context);
+    return .{
+        .s = try agnostic.parseString(try recordField(case_data.input, "\"s\":")),
+        .t = try agnostic.parseString(try recordField(case_data.input, "\"t\":")),
+    };
+}
+
+fn editDistanceInput(_: std.mem.Allocator, context: ?*const anyopaque) !EditDistanceInput {
+    const case_data = contextData(context);
+    return .{
+        .word1 = try agnostic.parseString(try recordField(case_data.input, "\"word1\":")),
+        .word2 = try agnostic.parseString(try recordField(case_data.input, "\"word2\":")),
+    };
+}
+
 fn stringInput(_: std.mem.Allocator, context: ?*const anyopaque) ![]const u8 {
     const case_data = contextData(context);
     return agnostic.parseString(case_data.input);
@@ -289,6 +468,21 @@ fn intOutputMatrixInput(_: std.mem.Allocator, _: []const []const i32, context: ?
 fn intOutputListInput(_: std.mem.Allocator, _: []const i32, context: ?*const anyopaque) !i32 {
     const case_data = contextData(context);
     return agnostic.parseInt(case_data.output);
+}
+
+fn boolOutputAnagramInput(_: std.mem.Allocator, _: AnagramInput, context: ?*const anyopaque) !bool {
+    const case_data = contextData(context);
+    return agnostic.parseBool(case_data.output);
+}
+
+fn intOutputEditDistanceInput(_: std.mem.Allocator, _: EditDistanceInput, context: ?*const anyopaque) !i32 {
+    const case_data = contextData(context);
+    return agnostic.parseInt(case_data.output);
+}
+
+fn matrixOutput(allocator: std.mem.Allocator, _: []const []const i32, context: ?*const anyopaque) ![]const []const i32 {
+    const case_data = contextData(context);
+    return agnostic.parseIntMatrix(allocator, case_data.output);
 }
 
 fn floodFill(grid: []const []const i32, visited: []bool, rows: usize, cols: usize, row: isize, col: isize) void {
@@ -331,6 +525,10 @@ fn findMatching(value: []const u8, start: usize, open: u8, close: u8) ?usize {
     return null;
 }
 
+fn intervalLessThan(_: void, left: Interval, right: Interval) bool {
+    return left.start < right.start;
+}
+
 fn contextData(context: ?*const anyopaque) *const agnostic.CaseData {
     return @as(*const agnostic.CaseData, @ptrCast(@alignCast(context.?)));
 }
@@ -343,6 +541,14 @@ fn matches(open: u8, close: u8) bool {
 
 fn sliceEquality(expected: []i32, actual: []i32) bool {
     return std.mem.eql(i32, expected, actual);
+}
+
+fn matrixEquality(expected: []const []const i32, actual: []const []const i32) bool {
+    if (expected.len != actual.len) return false;
+    for (expected, actual) |expected_row, actual_row| {
+        if (!std.mem.eql(i32, expected_row, actual_row)) return false;
+    }
+    return true;
 }
 
 fn intEquality(expected: i32, actual: i32) bool {

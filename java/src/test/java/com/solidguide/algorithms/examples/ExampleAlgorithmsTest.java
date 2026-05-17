@@ -51,5 +51,20 @@ public final class ExampleAlgorithmsTest {
         if (!ExampleHarness.trappingRainWaterSuite().run().passed()) {
             throw new AssertionError("expected trapping-rain-water suite to pass");
         }
+        if (!ExampleHarness.bestTimeStockSuite().run().passed()) {
+            throw new AssertionError("expected best-time-stock suite to pass");
+        }
+        if (!ExampleHarness.validAnagramSuite().run().passed()) {
+            throw new AssertionError("expected valid-anagram suite to pass");
+        }
+        if (!ExampleHarness.maximumSubarraySuite().run().passed()) {
+            throw new AssertionError("expected maximum-subarray suite to pass");
+        }
+        if (!ExampleHarness.mergeIntervalsSuite().run().passed()) {
+            throw new AssertionError("expected merge-intervals suite to pass");
+        }
+        if (!ExampleHarness.editDistanceSuite().run().passed()) {
+            throw new AssertionError("expected edit-distance suite to pass");
+        }
     }
 }

@@ -171,12 +171,37 @@ test "coding problem suites pass" {
     defer rain_suite.deinit();
     var rain_result = try rain_suite.run();
     defer rain_result.deinit();
+    var stock_suite = try problems.bestTimeStockSuite(std.testing.allocator);
+    defer stock_suite.deinit();
+    var stock_result = try stock_suite.run();
+    defer stock_result.deinit();
+    var anagram_suite = try problems.validAnagramSuite(std.testing.allocator);
+    defer anagram_suite.deinit();
+    var anagram_result = try anagram_suite.run();
+    defer anagram_result.deinit();
+    var max_subarray_suite = try problems.maximumSubarraySuite(std.testing.allocator);
+    defer max_subarray_suite.deinit();
+    var max_subarray_result = try max_subarray_suite.run();
+    defer max_subarray_result.deinit();
+    var intervals_suite = try problems.mergeIntervalsSuite(std.testing.allocator);
+    defer intervals_suite.deinit();
+    var intervals_result = try intervals_suite.run();
+    defer intervals_result.deinit();
+    var edit_suite = try problems.editDistanceSuite(std.testing.allocator);
+    defer edit_suite.deinit();
+    var edit_result = try edit_suite.run();
+    defer edit_result.deinit();
 
     try std.testing.expect(two_sum_result.passed());
     try std.testing.expect(valid_result.passed());
     try std.testing.expect(islands_result.passed());
     try std.testing.expect(courses_result.passed());
     try std.testing.expect(rain_result.passed());
+    try std.testing.expect(stock_result.passed());
+    try std.testing.expect(anagram_result.passed());
+    try std.testing.expect(max_subarray_result.passed());
+    try std.testing.expect(intervals_result.passed());
+    try std.testing.expect(edit_result.passed());
 }
 
 fn zeroInput(_: std.mem.Allocator, _: ?*const anyopaque) !i32 {

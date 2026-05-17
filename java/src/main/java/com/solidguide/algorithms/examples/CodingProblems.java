@@ -17,6 +17,12 @@ public final class CodingProblems {
     public record CourseScheduleInput(int numCourses, List<List<Integer>> prerequisites) {
     }
 
+    public record AnagramInput(String s, String t) {
+    }
+
+    public record EditDistanceInput(String word1, String word2) {
+    }
+
     public static List<Integer> twoSum(TwoSumInput input) {
         Map<Integer, Integer> seen = new HashMap<>();
         for (int i = 0; i < input.nums().size(); i++) {
@@ -112,6 +118,91 @@ public final class CodingProblems {
             }
         }
         return water;
+    }
+
+    public static int maxProfit(List<Integer> prices) {
+        int minPrice = Integer.MAX_VALUE;
+        int bestProfit = 0;
+        for (int price : prices) {
+            minPrice = Math.min(minPrice, price);
+            bestProfit = Math.max(bestProfit, price - minPrice);
+        }
+        return bestProfit;
+    }
+
+    public static boolean validAnagram(AnagramInput input) {
+        if (input.s().length() != input.t().length()) {
+            return false;
+        }
+        int[] counts = new int[26];
+        for (int i = 0; i < input.s().length(); i++) {
+            counts[input.s().charAt(i) - 'a']++;
+            counts[input.t().charAt(i) - 'a']--;
+        }
+        for (int count : counts) {
+            if (count != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static int maximumSubarray(List<Integer> nums) {
+        int current = nums.get(0);
+        int best = nums.get(0);
+        for (int i = 1; i < nums.size(); i++) {
+            current = Math.max(nums.get(i), current + nums.get(i));
+            best = Math.max(best, current);
+        }
+        return best;
+    }
+
+    public static List<List<Integer>> mergeIntervals(List<List<Integer>> intervals) {
+        if (intervals.isEmpty()) {
+            return List.of();
+        }
+        List<List<Integer>> sorted = new ArrayList<>(intervals);
+        sorted.sort(java.util.Comparator.comparingInt(interval -> interval.get(0)));
+        List<List<Integer>> merged = new ArrayList<>();
+        int start = sorted.get(0).get(0);
+        int end = sorted.get(0).get(1);
+        for (int i = 1; i < sorted.size(); i++) {
+            int nextStart = sorted.get(i).get(0);
+            int nextEnd = sorted.get(i).get(1);
+            if (nextStart <= end) {
+                end = Math.max(end, nextEnd);
+            } else {
+                merged.add(List.of(start, end));
+                start = nextStart;
+                end = nextEnd;
+            }
+        }
+        merged.add(List.of(start, end));
+        return merged;
+    }
+
+    public static int editDistance(EditDistanceInput input) {
+        int rows = input.word1().length();
+        int cols = input.word2().length();
+        int[][] dp = new int[rows + 1][cols + 1];
+        for (int row = 0; row <= rows; row++) {
+            dp[row][0] = row;
+        }
+        for (int col = 0; col <= cols; col++) {
+            dp[0][col] = col;
+        }
+        for (int row = 1; row <= rows; row++) {
+            for (int col = 1; col <= cols; col++) {
+                if (input.word1().charAt(row - 1) == input.word2().charAt(col - 1)) {
+                    dp[row][col] = dp[row - 1][col - 1];
+                } else {
+                    dp[row][col] = 1 + Math.min(
+                            dp[row - 1][col - 1],
+                            Math.min(dp[row - 1][col], dp[row][col - 1]));
+                }
+            }
+        }
+        return dp[rows][cols];
     }
 
     private static void floodFill(List<List<Integer>> grid, boolean[][] visited, int row, int col) {

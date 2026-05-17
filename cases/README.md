@@ -47,3 +47,8 @@ Current problem fixtures include:
 - `number_of_islands.tsv` (medium): grid traversal over a matrix.
 - `course_schedule.tsv` (medium): graph cycle detection / topological ordering.
 - `trapping_rain_water.tsv` (hard): two-pointer scan over an elevation list.
+- `best_time_stock.tsv` (easy): one-pass minimum tracking over prices.
+- `valid_anagram.tsv` (easy): character frequency counting over strings.
+- `maximum_subarray.tsv` (medium): Kadane dynamic programming over a list.
+- `merge_intervals.tsv` (medium): interval sorting and merging over a matrix.
+- `edit_distance.tsv` (hard): dynamic programming over two strings.
