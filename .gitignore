@@ -1,8 +1,18 @@
-# Compiled class file
-*.class
-
-# Log file
+# Logs
 *.log
+
+# Java
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+
+# Maven / Gradle build outputs
+target/
+build/
+.gradle/
+out/
 
 # BlueJ files
 *.ctxt
@@ -10,11 +20,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
+# Java archive packages
 *.zip
 *.tar.gz
 *.rar
@@ -23,16 +29,42 @@
 hs_err_pid*
 replay_pid*
 
-# Build outputs
-build/
-target/
-zig/zig-out/
-
 # Python
 __pycache__/
 *.py[cod]
+*$py.class
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.pyre/
+.eggs/
+*.egg-info/
+dist/
 .venv/
 venv/
+env/
+ENV/
+
+# Zig
+.zig-cache/
+zig-cache/
+zig-out/
+zig/.zig-cache/
+zig/zig-cache/
+zig/zig-out/
+*.o
+*.obj
+*.lib
+*.pdb
+*.exe
+
+# Editors / OS files
+.DS_Store
+.idea/
+.vscode/
