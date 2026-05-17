@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MAIN_OUT="$ROOT_DIR/build/classes/main"
+TEST_OUT="$ROOT_DIR/build/classes/test"
+
+rm -rf "$ROOT_DIR/build/classes"
+mkdir -p "$MAIN_OUT" "$TEST_OUT"
+
+shopt -s globstar nullglob
+main_sources=("$ROOT_DIR"/src/main/java/**/*.java)
+test_sources=("$ROOT_DIR"/src/test/java/**/*.java)
+
+if [ "${#main_sources[@]}" -eq 0 ]; then
+  echo "No main Java sources found." >&2
+  exit 1
+fi
+
+if [ "${#test_sources[@]}" -eq 0 ]; then
+  echo "No test Java sources found." >&2
+  exit 1
+fi
+
+javac -encoding UTF-8 --release 21 -d "$MAIN_OUT" "${main_sources[@]}"
+javac -encoding UTF-8 --release 21 -cp "$MAIN_OUT" -d "$TEST_OUT" "${test_sources[@]}"
+
+tests=(
+  com.solidguide.algorithms.framework.FrameworkSelfTest
+  com.solidguide.algorithms.examples.ExampleAlgorithmsTest
+)
+
+for test_class in "${tests[@]}"; do
+  echo "Running $test_class"
+  java -cp "$MAIN_OUT:$TEST_OUT" "$test_class"
+done
+
+echo "All tests passed."

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MAIN_OUT="$ROOT_DIR/build/classes/main"
+
+rm -rf "$MAIN_OUT"
+mkdir -p "$MAIN_OUT"
+
+shopt -s globstar nullglob
+main_sources=("$ROOT_DIR"/src/main/java/**/*.java)
+
+if [ "${#main_sources[@]}" -eq 0 ]; then
+  echo "No main Java sources found." >&2
+  exit 1
+fi
+
+javac -encoding UTF-8 --release 21 -d "$MAIN_OUT" "${main_sources[@]}"
+java -cp "$MAIN_OUT" com.solidguide.algorithms.examples.ExampleHarness
