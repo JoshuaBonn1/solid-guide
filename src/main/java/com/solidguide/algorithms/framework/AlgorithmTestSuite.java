@@ -3,6 +3,7 @@ package com.solidguide.algorithms.framework;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Runs one algorithm across a set of correctness cases and performance budgets.
@@ -57,9 +58,9 @@ public final class AlgorithmTestSuite<I, O> {
                         false,
                         expected,
                         actual,
-                        OptionalStats.empty(),
+                        Optional.empty(),
                         List.of(),
-                        OptionalThrowable.empty());
+                        Optional.empty());
             }
 
             ExecutionStats stats = measure(testCase);
@@ -68,18 +69,18 @@ public final class AlgorithmTestSuite<I, O> {
                     true,
                     expected,
                     actual,
-                    OptionalStats.of(stats),
+                    Optional.of(stats),
                     budgetViolations(testCase.budget(), stats),
-                    OptionalThrowable.empty());
+                    Optional.empty());
         } catch (Throwable failure) {
             return new AlgorithmCaseResult<>(
                     testCase.name(),
                     false,
                     expected,
                     actual,
-                    OptionalStats.empty(),
+                    Optional.empty(),
                     List.of(),
-                    OptionalThrowable.of(failure));
+                    Optional.of(failure));
         }
     }
 
@@ -171,32 +172,6 @@ public final class AlgorithmTestSuite<I, O> {
 
         public AlgorithmTestSuite<I, O> build() {
             return new AlgorithmTestSuite<>(suiteName, algorithmName, algorithm, cases, options);
-        }
-    }
-
-    private static final class OptionalStats {
-        private OptionalStats() {
-        }
-
-        static java.util.Optional<ExecutionStats> empty() {
-            return java.util.Optional.empty();
-        }
-
-        static java.util.Optional<ExecutionStats> of(ExecutionStats stats) {
-            return java.util.Optional.of(stats);
-        }
-    }
-
-    private static final class OptionalThrowable {
-        private OptionalThrowable() {
-        }
-
-        static java.util.Optional<Throwable> empty() {
-            return java.util.Optional.empty();
-        }
-
-        static java.util.Optional<Throwable> of(Throwable failure) {
-            return java.util.Optional.of(failure);
         }
     }
 }

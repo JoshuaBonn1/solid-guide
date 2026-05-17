@@ -1,7 +1,6 @@
 package com.solidguide.algorithms.framework;
 
 import java.time.Duration;
-import java.util.List;
 
 public final class FrameworkSelfTest {
     private FrameworkSelfTest() {
