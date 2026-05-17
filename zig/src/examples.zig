@@ -118,7 +118,7 @@ pub fn binarySearchSuite(allocator: std.mem.Allocator) framework.AlgorithmTestSu
     };
 }
 
-pub fn runExamples(allocator: std.mem.Allocator, writer: anytype) !bool {
+pub fn runExamples(allocator: std.mem.Allocator) !bool {
     var insertion_result = try insertionSortSuite(allocator).run();
     defer insertion_result.deinit();
     var merge_result = try mergeSortSuite(allocator).run();
@@ -127,7 +127,7 @@ pub fn runExamples(allocator: std.mem.Allocator, writer: anytype) !bool {
     defer binary_result.deinit();
 
     const results = [_]framework.AlgorithmSuiteResult{ insertion_result, merge_result, binary_result };
-    return framework.AlgorithmTestRunner.printReport(writer, &results);
+    return framework.AlgorithmTestRunner.printReport(&results);
 }
 
 fn sortingSuite(

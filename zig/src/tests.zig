@@ -159,7 +159,11 @@ fn offByOne(_: std.mem.Allocator, value: i32) !i32 {
 }
 
 fn slowIdentity(_: std.mem.Allocator, value: i32) !i32 {
-    std.time.sleep(2 * std.time.ns_per_ms);
+    var accumulator: usize = 0;
+    for (0..10_000) |index| {
+        accumulator +%= index;
+    }
+    std.mem.doNotOptimizeAway(accumulator);
     return value;
 }
 

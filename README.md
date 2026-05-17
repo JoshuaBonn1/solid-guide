@@ -29,7 +29,7 @@ scripts/   Root entrypoints for testing and benchmark reports
 
 - JDK 21 or newer
 - Python 3.11 or newer
-- Zig 0.14 or newer
+- Zig 0.16 or newer
 - Optional: Maven 3.9+ if you prefer `mvn test`
 
 ## Run tests

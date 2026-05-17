@@ -2,11 +2,10 @@ const std = @import("std");
 const examples = @import("examples.zig");
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
+    var debug_allocator = std.heap.DebugAllocator(.{}){};
+    defer _ = debug_allocator.deinit();
 
-    const stdout = std.io.getStdOut().writer();
-    const passed = try examples.runExamples(gpa.allocator(), stdout);
+    const passed = try examples.runExamples(debug_allocator.allocator());
     if (!passed) {
         std.process.exit(1);
     }

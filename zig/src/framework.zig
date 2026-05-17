@@ -229,9 +229,9 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
 
                 const memory_before = if (self.options.measure_memory) arena.queryCapacity() else 0;
                 const input = try test_case.input_factory(allocator);
-                const started = std.time.nanoTimestamp();
+                const started = try monotonicNowNs();
                 const output = try self.algorithm(allocator, input);
-                const elapsed_ns = @as(u64, @intCast(std.time.nanoTimestamp() - started));
+                const elapsed_ns = (try monotonicNowNs()) - started;
                 std.mem.doNotOptimizeAway(output);
                 const memory_after = if (self.options.measure_memory) arena.queryCapacity() else memory_before;
                 const memory_delta = if (memory_after > memory_before) memory_after - memory_before else 0;
@@ -256,40 +256,40 @@ pub fn AlgorithmTestSuite(comptime Input: type, comptime Output: type) type {
 }
 
 pub const AlgorithmTestRunner = struct {
-    pub fn printReport(writer: anytype, results: []const AlgorithmSuiteResult) !bool {
+    pub fn printReport(results: []const AlgorithmSuiteResult) bool {
         var all_passed = true;
         for (results) |result| {
             all_passed = all_passed and result.passed();
-            try writeReport(writer, result);
-            try writer.print("\n", .{});
+            writeReport(result);
+            std.debug.print("\n", .{});
         }
         return all_passed;
     }
 
-    pub fn writeReport(writer: anytype, result: AlgorithmSuiteResult) !void {
-        try writer.print(
+    pub fn writeReport(result: AlgorithmSuiteResult) void {
+        std.debug.print(
             "Suite: {s} | Algorithm: {s} | {d}/{d} passed\n",
             .{ result.suite_name, result.algorithm_name, result.passedCaseCount(), result.case_results.len },
         );
 
         for (result.case_results) |case_result| {
-            try writer.print("  [{s}] {s}", .{ if (case_result.passed()) "PASS" else "FAIL", case_result.case_name });
+            std.debug.print("  [{s}] {s}", .{ if (case_result.passed()) "PASS" else "FAIL", case_result.case_name });
             if (case_result.stats) |stats| {
-                try writer.print(
+                std.debug.print(
                     " | avg {d}ns | min {d}ns | max {d}ns | max memory delta {d} bytes",
                     .{ stats.averageDurationNs(), stats.min_duration_ns, stats.max_duration_ns, stats.max_memory_delta_bytes },
                 );
             }
             if (!case_result.correct) {
-                try writer.print(" | correctness failed", .{});
+                std.debug.print(" | correctness failed", .{});
             }
             if (case_result.budget_violation_count > 0) {
-                try writer.print(" | budget violations {d}", .{case_result.budget_violation_count});
+                std.debug.print(" | budget violations {d}", .{case_result.budget_violation_count});
             }
             if (case_result.error_name) |error_name| {
-                try writer.print(" | error={s}", .{error_name});
+                std.debug.print(" | error={s}", .{error_name});
             }
-            try writer.print("\n", .{});
+            std.debug.print("\n", .{});
         }
     }
 
@@ -325,4 +325,19 @@ fn budgetViolationCount(budget: ComplexityBudget, stats: ExecutionStats) usize {
         }
     }
     return count;
+}
+
+fn monotonicNowNs() !u64 {
+    switch (@import("builtin").os.tag) {
+        .linux => {
+            var timespec: std.os.linux.timespec = undefined;
+            const rc = std.os.linux.clock_gettime(.MONOTONIC, &timespec);
+            if (rc != 0) {
+                return error.ClockUnavailable;
+            }
+            return @as(u64, @intCast(timespec.sec)) * std.time.ns_per_s +
+                @as(u64, @intCast(timespec.nsec));
+        },
+        else => return error.UnsupportedClock,
+    }
 }
