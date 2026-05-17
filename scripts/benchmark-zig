@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if ! command -v zig >/dev/null 2>&1; then
+  echo "Zig is required to run Zig benchmarks. Install Zig and retry." >&2
+  exit 1
+fi
+
+zig build --build-file "$ROOT_DIR/zig/build.zig" --cache-dir "$ROOT_DIR/build/zig-cache" --global-cache-dir "$ROOT_DIR/build/zig-global-cache" run
