@@ -1,0 +1,6 @@
+[project]
+name = "solid-guide-algorithms"
+version = "0.1.0"
+description = "Algorithm correctness, speed, and memory testing framework in Python."
+requires-python = ">=3.11"
+dependencies = []
